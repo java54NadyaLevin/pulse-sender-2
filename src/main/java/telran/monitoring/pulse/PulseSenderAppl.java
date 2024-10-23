@@ -15,11 +15,15 @@ public class PulseSenderAppl {
 	private static final int MAX_PULSE_VALUE = 200;
 	private static final String HOST = "localhost";
 	private static final int PORT = 5000;
-	private static final int JUMP_PROB = 15;
+	private static final int JUMP_PROB = 25;
 	private static final int MIN_JUMP_PERCENT = 10;
 	private static final int MAX_JUMP_PERCENT = 100;
-	private static final int JUMP_POSITIVE_PROB = 70;
+	private static final int JUMP_POSITIVE_PROB = 50;
 	private static final int PATIENT_ID_PRINTED_VALUES = 3;
+	
+	private static final int MAX_ERROR_PULSE_PROB = 5;
+	private static final int MIN_ERROR_PULSE_PROB = 3;
+	
 	private static Random random = new Random();
 	private static HashMap<Long, Integer> patientIdPulseValue = new HashMap<>();
 	static DatagramSocket socket;
@@ -65,9 +69,14 @@ public class PulseSenderAppl {
 	private static int getRandomPulseValue(long patientId) {
 		int valueRes = patientIdPulseValue.computeIfAbsent(patientId,
 				k -> random.nextInt(MIN_PULSE_VALUE, MAX_PULSE_VALUE + 1));
-		if (chance(JUMP_PROB)) {
+		int jump = random.nextInt(0, 100);
+		if ((jump >= MAX_ERROR_PULSE_PROB + MIN_ERROR_PULSE_PROB) & (jump < JUMP_PROB)) {
 			valueRes = getValueWithJump(valueRes);
 			patientIdPulseValue.put(patientId, valueRes);
+		}else if(jump < MIN_ERROR_PULSE_PROB){
+			valueRes = random.nextInt(0, MIN_PULSE_VALUE - 9);
+		}else if(jump < MIN_ERROR_PULSE_PROB + MAX_ERROR_PULSE_PROB & jump >= MIN_ERROR_PULSE_PROB){
+			valueRes = random.nextInt(MAX_PULSE_VALUE + 11, MAX_PULSE_VALUE + 50);
 		}
 
 		return valueRes;
